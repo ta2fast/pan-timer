@@ -3,16 +3,14 @@
 
 <head>
     <meta charset="UTF-8">
-    <head>
-    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="パンタイマー">
     <link rel="apple-touch-icon" href="icon.png">
+    
     <title>パンどろぼう風・保存機能付き計算機</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>パンどろぼう風・保存機能付き計算機</title>
+    
     <style>
         :root {
             --bread-color: #f4d06f;
@@ -184,13 +182,8 @@
             top: 30%;
         }
 
-        .face::before {
-            left: 30%;
-        }
-
-        .face::after {
-            right: 30%;
-        }
+        .face::before { left: 30%; }
+        .face::after { right: 30%; }
 
         .nose {
             position: absolute;
@@ -201,14 +194,11 @@
             top: 45%;
         }
 
-        .hidden {
-            display: none;
-        }
+        .hidden { display: none; }
     </style>
 </head>
 
 <body>
-
     <div class="container">
         <div class="now-clock-container">
             <div class="now-label">現在の時刻</div>
@@ -258,7 +248,6 @@
             saveAllData();
         }
 
-        // メニューボタンの生成と初期化
         function initMenus() {
             const savedData = localStorage.getItem('panTimerData');
             const menus = savedData ? JSON.parse(savedData).menus : defaultMenus;
@@ -267,26 +256,27 @@
             const container = document.getElementById('menu-container');
             container.innerHTML = '';
 
-            menus.forEach((menu, index) => {
+            menus.forEach((menu) => {
                 const btn = document.createElement('div');
                 btn.className = 'bread-shape menu-bread-btn';
                 btn.onclick = function () { useMenu(this); };
                 btn.innerHTML = `
-                <input type="text" class="menu-title-input" value="${menu.title}" oninput="saveAllData()" onclick="event.stopPropagation()">
+                <input type="text" class="menu-title-input" value="${menu.title}" oninput="saveAllData()" onchange="saveAllData()" onclick="event.stopPropagation()">
                 <div class="time-input-group" onclick="event.stopPropagation()">
-                    <input type="number" class="menu-time-num h-val" value="${menu.h}" oninput="saveAllData()">時
-                    <input type="number" class="menu-time-num m-val" value="${menu.m}" oninput="saveAllData()">分
+                    <input type="number" class="menu-time-num h-val" value="${menu.h}" inputmode="numeric" pattern="\\d*" oninput="saveAllData()" onchange="saveAllData()">時
+                    <input type="number" class="menu-time-num m-val" value="${menu.m}" inputmode="numeric" pattern="\\d*" oninput="saveAllData()" onchange="saveAllData()">分
                 </div>
-            `;
+                `;
                 container.appendChild(btn);
             });
 
             if (savedMode) switchMode(savedMode);
         }
 
-        // データの保存
         function saveAllData() {
             const menuElements = document.querySelectorAll('.menu-bread-btn');
+            if (menuElements.length === 0) return;
+
             const menus = Array.from(menuElements).map(el => ({
                 title: el.querySelector('.menu-title-input').value,
                 h: el.querySelector('.h-val').value,
@@ -327,6 +317,4 @@
         window.onload = initMenus;
     </script>
 </body>
-
-
 </html>
