@@ -1,15 +1,12 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="apple-touch-icon" href="image-icon.png">
-    <link rel="icon" type="image/png" href="image-icon.png">
+    <link rel="apple-touch-icon" href="image-icon.png?v=1">
+    <link rel="icon" type="image/png" href="image-icon.png?v=1">
     <meta name="apple-mobile-web-app-title" content="PAN TIMER">
     <meta name="apple-mobile-web-app-capable" content="yes">
-   
-   
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>PAN TIMER</title>
     <style>
@@ -29,7 +26,6 @@
         }
         .container { width: 95%; max-width: 440px; padding: 10px; display: flex; flex-direction: column; gap: 12px; }
         
-        /* 現時刻を他の窓と同じ幅に修正 */
         .clock-window { 
             width: 100%; 
             box-sizing: border-box;
@@ -71,9 +67,7 @@
 <body>
     <div class="container">
         <div class="clock-window"><span style="color:#aaa; font-size:0.8rem;">げんざいのじこく：</span><span id="live-clock">00:00:00</span></div>
-        
         <div class="dq-window msg-window"><div id="msg">パンしょくにんの あさが きた！▼</div></div>
-        
         <div class="dq-window main-window">
             <ul class="command-list">
                 <li class="command-item" onclick="playSelect(); calcRemaining()">きぼうじかんまでは？</li>
@@ -93,7 +87,6 @@
                 </div>
             </div>
         </div>
-        
         <div class="dq-window">
             <div class="timer-display" id="t-display">00:00</div>
             <div class="btn-row">
@@ -151,25 +144,19 @@
                 document.getElementById('alarm-type').value = saved.sound || "levelup";
             }
         }
-        
         function calcRemaining() {
             const target = document.getElementById('target-time').value;
             if (!target) return typeMessage("じかんを いれるのだ！");
             const now = new Date(); const [h, m] = target.split(':');
             let tDate = new Date(); tDate.setHours(h, m, 0);
             if (tDate < now) tDate.setDate(tDate.getDate() + 1);
-            
             const diffSeconds = Math.floor((tDate - now) / 1000);
             timeLeft = diffSeconds;
-            
             const displayH = Math.floor(timeLeft / 3600);
             const displayM = Math.floor((timeLeft % 3600) / 60);
-            
             updateTimerDisplay(); 
-            // メッセージに計算結果（残り時間）を含める
             typeMessage(`あと ${displayH}じかん ${displayM}ぷん だ！\nタイマーに セットしたぞ！`);
         }
-        
         function calcFinish() {
             const h = parseInt(document.getElementById('add-h').value) || 0;
             const m = parseInt(document.getElementById('add-m').value) || 0;
@@ -178,7 +165,6 @@
             updateTimerDisplay(); const finish = new Date(Date.now() + timeLeft * 1000);
             typeMessage(`${finish.getHours()}じ ${String(finish.getMinutes()).padStart(2, '0')}ふん に やきあがるぞ！\nタイマーに セットしたぞ！`);
         }
-        
         function startTimer() {
             if (timeLeft <= 0) return typeMessage("じかんが ないぞ！");
             endTime = Date.now() + timeLeft * 1000;
@@ -203,4 +189,3 @@
     </script>
 </body>
 </html>
-
