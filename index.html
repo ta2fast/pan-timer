@@ -3,318 +3,297 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="パンタイマー">
-    <link rel="apple-touch-icon" href="icon.png">
-    
-    <title>パンどろぼう風・保存機能付き計算機</title>
-    
+    <title>PAN TIMER</title>
     <style>
         :root {
-            --bread-color: #f4d06f;
-            --crust-color: #b36200;
-            --bg-color: #fff9ed;
-            --text-color: #5d4037;
-            --accent-red: #d32f2f;
+            --dq-white: #ffffff;
+            --dq-border: 3px solid var(--dq-white);
         }
 
         body {
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            background-color: var(--bg-color);
+            background-color: #000;
+            color: var(--dq-white);
+            font-family: 'Courier New', 'DotGothic16', sans-serif;
+            margin: 0;
             display: flex;
             justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            color: var(--text-color);
+            touch-action: manipulation;
+            user-select: none;
         }
 
         .container {
-            text-align: center;
             width: 95%;
-            max-width: 450px;
-            padding: 15px;
-        }
-
-        .now-clock-container {
-            margin-bottom: 5px;
-        }
-
-        .now-label {
-            font-size: 0.8rem;
-            font-weight: bold;
-            color: var(--crust-color);
-            margin-bottom: 2px;
-        }
-
-        .now-time {
-            font-size: 2.2rem;
-            font-weight: bold;
-            color: var(--text-color);
-            letter-spacing: 2px;
-        }
-
-        .mode-tabs {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 15px 0;
-        }
-
-        .tab-btn {
-            background: #e0d5c1;
-            border: none;
+            max-width: 440px;
             padding: 10px;
-            border-radius: 15px;
-            cursor: pointer;
-            font-weight: bold;
-            color: #777;
-            flex: 1;
-            font-size: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
-        .tab-btn.active {
-            background: var(--crust-color);
-            color: white;
+        .clock-window {
+            align-self: flex-start;
+            padding: 6px 12px;
+            font-size: 1.1rem;
+            border: var(--dq-border);
+            border-radius: 8px;
+            box-shadow: 0 0 0 2px #000;
+            margin-top: 10px;
         }
 
-        .bread-shape {
-            background: white;
-            border: 4px solid var(--crust-color);
-            border-radius: 35% 35% 15% 15% / 45% 45% 15% 15%;
-            box-shadow: 0 5px 0 #d7a644;
-            display: inline-flex;
+        .dq-window {
+            background: #000;
+            border: var(--dq-border);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 0 0 2px #000;
+        }
+
+        .msg-window {
+            min-height: 70px;
+            font-size: 1.2rem;
+            line-height: 1.5;
+        }
+
+        .main-window {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            gap: 10px;
+        }
+
+        .command-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
             flex-direction: column;
             justify-content: center;
+            gap: 15px;
+        }
+
+        .command-item {
+            cursor: pointer;
+            padding: 8px 5px;
+            font-size: 1rem;
+            display: flex;
             align-items: center;
             position: relative;
         }
 
-        .main-bread {
-            width: 280px;
-            height: 160px;
-            margin-bottom: 15px;
+        .command-item::before {
+            content: '▶';
+            color: transparent;
+            margin-right: 8px;
         }
 
-        .result-label {
-            font-size: 0.8rem;
-            color: var(--accent-red);
-            font-weight: bold;
-            margin-top: -10px;
-            z-index: 2;
+        .command-item:hover::before,
+        .command-item:active::before {
+            color: var(--dq-white);
         }
 
-        .result-time {
-            font-size: 3.2rem;
-            font-weight: bold;
-            z-index: 2;
-        }
-
-        .target-box {
-            background: white;
-            padding: 8px;
-            border-radius: 15px;
-            margin-bottom: 15px;
-            border: 2px dashed var(--crust-color);
-        }
-
-        .menu-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+        .input-area {
+            display: flex;
+            flex-direction: column;
             gap: 15px;
+            border-left: 1px solid #444;
+            padding-left: 15px;
         }
 
-        .menu-bread-btn {
-            width: 100%;
-            height: 130px;
-            cursor: pointer;
-            padding: 5px;
-            box-sizing: border-box;
-            transition: transform 0.1s;
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
         }
 
-        .menu-bread-btn:active {
-            transform: translateY(3px);
-            box-shadow: 0 2px 0 #d7a644;
-        }
-
-        .menu-title-input {
-            border: none;
-            border-bottom: 1px solid #ccc;
-            width: 85%;
+        .input-group label {
+            font-size: 0.75rem;
+            color: #aaa;
             text-align: center;
-            font-size: 0.8rem;
-            font-weight: bold;
-            color: var(--text-color);
-            background: transparent;
-            margin-top: 15px;
         }
 
-        .time-input-group {
+        input {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid var(--dq-white);
+            color: var(--dq-white);
+            font-size: 1.3rem;
+            width: 100%;
+            outline: none;
+            text-align: center;
+        }
+
+        .time-split {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 2px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            margin-top: 5px;
+            gap: 4px;
         }
 
-        .menu-time-num {
-            border: none;
-            width: 35px;
+        .time-split input {
+            width: 45px;
+        }
+
+        .timer-display {
+            font-size: 4rem;
+            margin: 10px 0;
+            font-family: monospace;
             text-align: center;
-            font-size: 1.1rem;
-            font-weight: bold;
-            background: #fff9ed;
-            border-radius: 5px;
         }
 
-        .face::before,
-        .face::after {
-            content: '';
-            position: absolute;
-            background: #333;
-            border-radius: 50%;
-            width: 6px;
-            height: 6px;
-            top: 30%;
+        .btn-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
         }
 
-        .face::before { left: 30%; }
-        .face::after { right: 30%; }
-
-        .nose {
-            position: absolute;
-            width: 8px;
-            height: 6px;
-            background: #ff5252;
-            border-radius: 50%;
-            top: 45%;
+        .dq-btn {
+            background: transparent;
+            border: 2px solid var(--dq-white);
+            color: var(--dq-white);
+            padding: 12px 5px;
+            cursor: pointer;
+            font-size: 1rem;
         }
 
-        .hidden { display: none; }
+        .dq-btn:active {
+            background: var(--dq-white);
+            color: #000;
+        }
+
+        .sound-select {
+            background: #000;
+            color: #fff;
+            border: 1px solid #fff;
+            font-size: 0.8rem;
+            width: 100%;
+            margin-top: 10px;
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <div class="now-clock-container">
-            <div class="now-label">現在の時刻</div>
-            <div class="now-time" id="live-clock">00:00:00</div>
+        <div class="clock-window" id="live-clock">00:00:00</div>
+        <div class="dq-window msg-window">
+            <div id="msg">パンしょくにんの あさが きた！▼</div>
         </div>
-
-        <div class="mode-tabs">
-            <button class="tab-btn active" id="tab1" onclick="switchMode(1)">いつ終わる？</button>
-            <button class="tab-btn" id="tab2" onclick="switchMode(2)">いつ始める？</button>
+        <div class="dq-window main-window">
+            <ul class="command-list">
+                <li class="command-item" onclick="playSelect(); calcRemaining()">きぼうじかんまでは？</li>
+                <li class="command-item" onclick="playSelect(); calcFinish()">げんじこくにたすと？</li>
+            </ul>
+            <div class="input-area">
+                <div class="input-group">
+                    <label>焼き上がり時間</label>
+                    <input type="time" id="target-time" onchange="save()">
+                </div>
+                <div class="input-group">
+                    <label>足す時間</label>
+                    <div class="time-split">
+                        <input type="number" id="add-h" placeholder="0" onchange="save()">h
+                        <input type="number" id="add-m" placeholder="0" onchange="save()">m
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <div class="bread-shape main-bread">
-            <div class="face"></div>
-            <div class="nose"></div>
-            <div id="res-label" class="result-label">メニューをタップ</div>
-            <div id="res-display" class="result-time">--:--</div>
-        </div>
-
-        <div id="target-ui" class="target-box hidden">
-            希望の終了時刻：<input type="time" id="target-t" onchange="saveAllData()" style="font-size: 1.1rem; border:none; border-bottom:2px solid var(--crust-color); background:transparent;">
-        </div>
-
-        <div class="menu-grid" id="menu-container">
+        <div class="dq-window">
+            <div class="timer-display" id="t-display">00:00</div>
+            <div class="btn-row">
+                <button class="dq-btn" onclick="playSelect(); startTimer()">はじめる</button>
+                <button class="dq-btn" onclick="playSelect(); pauseTimer()">とまる</button>
+                <button class="dq-btn" onclick="playSelect(); resetTimer()">リセット</button>
+            </div>
+            <select id="alarm-type" class="sound-select" onchange="playAlarmTest()">
+                <option value="levelup">じゅもん：レベルアップ</option>
+                <option value="inn">じゅもん：しゅくやど</option>
+                <option value="save">じゅもん：ぼうけんのきろく</option>
+            </select>
         </div>
     </div>
-
     <script>
-        let currentMode = 1;
-        const defaultMenus = [
-            { title: "一次発酵", h: 1, m: 0 },
-            { title: "二次発酵", h: 0, m: 45 },
-            { title: "焼き上げ", h: 0, m: 15 },
-            { title: "予熱", h: 0, m: 10 }
-        ];
-
-        function updateClock() {
-            document.getElementById('live-clock').textContent = new Date().toLocaleTimeString('ja-JP');
+        let typeInterval, timerInterval, timeLeft = 0, endTime = 0;
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(freq, type, duration, vol = 0.1) {
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + duration);
         }
+        function playSelect() { playSound(880, 'square', 0.1); }
+        function playAlarm() {
+            const type = document.getElementById('alarm-type').value;
+            if (type === 'levelup') [523, 523, 523, 523, 659, 783, 523, 783].forEach((f, i) => setTimeout(() => playSound(f, 'square', 0.2), i * 150));
+            else if (type === 'inn') [659, 587, 523, 587, 659, 659].forEach((f, i) => setTimeout(() => playSound(f, 'square', 0.3), i * 200));
+            else[783, 880, 987, 1046].forEach((f, i) => setTimeout(() => playSound(f, 'square', 0.1), i * 100));
+        }
+        function playAlarmTest() { playSelect(); setTimeout(playAlarm, 300); }
+        function typeMessage(text) {
+            clearInterval(typeInterval);
+            const msgEl = document.getElementById('msg'); msgEl.textContent = ""; let i = 0;
+            typeInterval = setInterval(() => { if (i < text.length) { msgEl.textContent += text.charAt(i); i++; } else clearInterval(typeInterval); }, 50);
+        }
+        function updateClock() { document.getElementById('live-clock').textContent = new Date().toLocaleTimeString('ja-JP', { hour12: false }); }
         setInterval(updateClock, 1000);
-        updateClock();
-
-        function switchMode(mode) {
-            currentMode = mode;
-            document.getElementById('tab1').classList.toggle('active', mode === 1);
-            document.getElementById('tab2').classList.toggle('active', mode === 2);
-            document.getElementById('target-ui').classList.toggle('hidden', mode === 1);
-            saveAllData();
-        }
-
-        function initMenus() {
-            const savedData = localStorage.getItem('panTimerData');
-            const menus = savedData ? JSON.parse(savedData).menus : defaultMenus;
-            const savedMode = savedData ? JSON.parse(savedData).mode : 1;
-
-            const container = document.getElementById('menu-container');
-            container.innerHTML = '';
-
-            menus.forEach((menu) => {
-                const btn = document.createElement('div');
-                btn.className = 'bread-shape menu-bread-btn';
-                btn.onclick = function () { useMenu(this); };
-                btn.innerHTML = `
-                <input type="text" class="menu-title-input" value="${menu.title}" oninput="saveAllData()" onchange="saveAllData()" onclick="event.stopPropagation()">
-                <div class="time-input-group" onclick="event.stopPropagation()">
-                    <input type="number" class="menu-time-num h-val" value="${menu.h}" inputmode="numeric" pattern="\\d*" oninput="saveAllData()" onchange="saveAllData()">時
-                    <input type="number" class="menu-time-num m-val" value="${menu.m}" inputmode="numeric" pattern="\\d*" oninput="saveAllData()" onchange="saveAllData()">分
-                </div>
-                `;
-                container.appendChild(btn);
-            });
-
-            if (savedMode) switchMode(savedMode);
-        }
-
-        function saveAllData() {
-            const menuElements = document.querySelectorAll('.menu-bread-btn');
-            if (menuElements.length === 0) return;
-
-            const menus = Array.from(menuElements).map(el => ({
-                title: el.querySelector('.menu-title-input').value,
-                h: el.querySelector('.h-val').value,
-                m: el.querySelector('.m-val').value
+        function save() {
+            localStorage.setItem('dqPanV7', JSON.stringify({
+                time: document.getElementById('target-time').value,
+                addH: document.getElementById('add-h').value,
+                addM: document.getElementById('add-m').value,
+                sound: document.getElementById('alarm-type').value
             }));
-
-            const data = {
-                menus: menus,
-                mode: currentMode
-            };
-            localStorage.setItem('panTimerData', JSON.stringify(data));
         }
-
-        function useMenu(element) {
-            const title = element.querySelector('.menu-title-input').value;
-            const h = parseInt(element.querySelector('.h-val').value) || 0;
-            const m = parseInt(element.querySelector('.m-val').value) || 0;
-            const durationMs = (h * 60 + m) * 60 * 1000;
-            const now = new Date();
-
-            if (currentMode === 1) {
-                const finishDate = new Date(now.getTime() + durationMs);
-                document.getElementById('res-label').textContent = title + " の終了時刻";
-                document.getElementById('res-display').textContent = `${finishDate.getHours()}:${String(finishDate.getMinutes()).padStart(2, '0')}`;
-            } else {
-                const targetStr = document.getElementById('target-t').value;
-                if (!targetStr) { alert("先に「希望の終了時刻」を入れてね！"); return; }
-                const [tH, tM] = targetStr.split(':');
-                const targetDate = new Date();
-                targetDate.setHours(tH, tM, 0);
-                if (targetDate < now) targetDate.setDate(targetDate.getDate() + 1);
-                const startDate = new Date(targetDate.getTime() - durationMs);
-                document.getElementById('res-label').textContent = title + " の開始時刻";
-                document.getElementById('res-display').textContent = `${startDate.getHours()}:${String(startDate.getMinutes()).padStart(2, '0')}`;
+        function load() {
+            const saved = JSON.parse(localStorage.getItem('dqPanV7'));
+            if (saved) {
+                document.getElementById('target-time').value = saved.time || "";
+                document.getElementById('add-h').value = saved.addH || "";
+                document.getElementById('add-m').value = saved.addM || "";
+                document.getElementById('alarm-type').value = saved.sound || "levelup";
             }
         }
-
-        window.onload = initMenus;
+        function calcRemaining() {
+            const target = document.getElementById('target-time').value;
+            if (!target) return typeMessage("じかんを いれるのだ！");
+            const now = new Date(); const [h, m] = target.split(':');
+            let tDate = new Date(); tDate.setHours(h, m, 0);
+            if (tDate < now) tDate.setDate(tDate.getDate() + 1);
+            timeLeft = Math.floor((tDate - now) / 1000);
+            updateTimerDisplay(); typeMessage("タイマーに セットしたぞ！");
+        }
+        function calcFinish() {
+            const h = parseInt(document.getElementById('add-h').value) || 0;
+            const m = parseInt(document.getElementById('add-m').value) || 0;
+            if (h === 0 && m === 0) return typeMessage("じかんを いれるのだ！");
+            timeLeft = (h * 3600) + (m * 60);
+            updateTimerDisplay(); const finish = new Date(Date.now() + timeLeft * 1000);
+            typeMessage(`${finish.getHours()}じ ${String(finish.getMinutes()).padStart(2, '0')}ふん に やきあがるぞ！`);
+        }
+        function startTimer() {
+            if (timeLeft <= 0) return typeMessage("じかんが ないぞ！");
+            endTime = Date.now() + timeLeft * 1000;
+            clearInterval(timerInterval);
+            typeMessage("パンを やきはじめた！");
+            timerInterval = setInterval(tick, 1000);
+        }
+        function tick() {
+            timeLeft = Math.max(0, Math.round((endTime - Date.now()) / 1000));
+            updateTimerDisplay();
+            if (timeLeft <= 0) { clearInterval(timerInterval); playAlarm(); typeMessage("パンが やけたぞ！\nおめでとう！ レベルがあがった！"); }
+        }
+        function pauseTimer() { clearInterval(timerInterval); typeMessage("ちょっと ひとやすみだ。"); }
+        function resetTimer() { pauseTimer(); timeLeft = 0; updateTimerDisplay(); typeMessage("タイマーを リセットした。"); }
+        function updateTimerDisplay() {
+            const h = Math.floor(timeLeft / 3600), m = Math.floor((timeLeft % 3600) / 60), s = timeLeft % 60;
+            document.getElementById('t-display').textContent = h > 0 ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}` : `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+        window.onload = () => { updateClock(); load(); updateTimerDisplay(); };
+        document.body.addEventListener('click', () => { if (audioCtx.state === 'suspended') audioCtx.resume(); }, { once: true });
+        document.addEventListener('visibilitychange', () => { if (!document.hidden && timerInterval) tick(); });
     </script>
 </body>
+
 </html>
