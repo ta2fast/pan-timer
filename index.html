@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -12,7 +11,6 @@
             --dq-white: #ffffff;
             --dq-border: 3px solid var(--dq-white);
         }
-
         body {
             background-color: #000;
             color: var(--dq-white);
@@ -23,162 +21,53 @@
             touch-action: manipulation;
             user-select: none;
         }
-
-        .container {
-            width: 95%;
-            max-width: 440px;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+        .container { width: 95%; max-width: 440px; padding: 10px; display: flex; flex-direction: column; gap: 12px; }
+        
+        /* 現時刻を他の窓と同じ幅に修正 */
+        .clock-window { 
+            width: 100%; 
+            box-sizing: border-box;
+            padding: 10px; 
+            font-size: 1.1rem; 
+            border: var(--dq-border); 
+            border-radius: 10px; 
+            box-shadow: 0 0 0 2px #000; 
+            margin-top: 5px;
+            text-align: left;
         }
-
-        .clock-window {
-            align-self: flex-start;
-            padding: 6px 12px;
-            font-size: 1.1rem;
-            border: var(--dq-border);
-            border-radius: 8px;
-            box-shadow: 0 0 0 2px #000;
-            margin-top: 10px;
-        }
-
-        .dq-window {
-            background: #000;
-            border: var(--dq-border);
-            border-radius: 10px;
-            padding: 15px;
-            box-shadow: 0 0 0 2px #000;
-        }
-
-        .msg-window {
-            min-height: 70px;
-            font-size: 1.2rem;
-            line-height: 1.5;
-        }
-
-        .main-window {
-            display: grid;
-            grid-template-columns: 1.3fr 1fr;
-            gap: 10px;
-        }
-
-        .command-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 15px;
-        }
-
-        .command-item {
-            cursor: pointer;
-            padding: 8px 5px;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            position: relative;
-        }
-
-        .command-item::before {
-            content: '▶';
-            color: transparent;
-            margin-right: 8px;
-        }
-
-        .command-item:hover::before,
-        .command-item:active::before {
-            color: var(--dq-white);
-        }
-
-        .input-area {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            border-left: 1px solid #444;
-            padding-left: 15px;
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .input-group label {
-            font-size: 0.75rem;
-            color: #aaa;
-            text-align: center;
-        }
-
+        
+        .dq-window { background: #000; border: var(--dq-border); border-radius: 10px; padding: 15px; box-shadow: 0 0 0 2px #000; }
+        .msg-window { min-height: 70px; font-size: 1.2rem; line-height: 1.5; }
+        .main-window { display: grid; grid-template-columns: 1.3fr 1fr; gap: 10px; }
+        .command-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; justify-content: center; gap: 15px; }
+        .command-item { cursor: pointer; padding: 8px 5px; font-size: 1rem; display: flex; align-items: center; position: relative; }
+        .command-item::before { content: '▶'; color: transparent; margin-right: 8px; }
+        .command-item:hover::before, .command-item:active::before { color: var(--dq-white); }
+        .input-area { display: flex; flex-direction: column; gap: 15px; border-left: 1px solid #444; padding-left: 15px; }
+        .input-group { display: flex; flex-direction: column; gap: 5px; }
+        .input-group label { font-size: 0.75rem; color: #aaa; text-align: center; }
         input {
-            background: transparent;
-            border: none;
-            border-bottom: 2px solid var(--dq-white);
-            color: var(--dq-white);
-            font-size: 1.3rem;
-            width: 100%;
-            outline: none;
-            text-align: center;
+            background: transparent; border: none; border-bottom: 2px solid var(--dq-white);
+            color: var(--dq-white); font-size: 1.3rem; width: 100%; outline: none; text-align: center;
         }
-
-        .time-split {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-        }
-
-        .time-split input {
-            width: 45px;
-        }
-
-        .timer-display {
-            font-size: 4rem;
-            margin: 10px 0;
-            font-family: monospace;
-            text-align: center;
-        }
-
-        .btn-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 8px;
-        }
-
+        .time-split { display: flex; align-items: center; justify-content: center; gap: 4px; }
+        .time-split input { width: 45px; }
+        .timer-display { font-size: 4rem; margin: 10px 0; font-family: monospace; text-align: center; }
+        .btn-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
         .dq-btn {
-            background: transparent;
-            border: 2px solid var(--dq-white);
-            color: var(--dq-white);
-            padding: 12px 5px;
-            cursor: pointer;
-            font-size: 1rem;
+            background: transparent; border: 2px solid var(--dq-white);
+            color: var(--dq-white); padding: 12px 5px; cursor: pointer; font-size: 1rem;
         }
-
-        .dq-btn:active {
-            background: var(--dq-white);
-            color: #000;
-        }
-
-        .sound-select {
-            background: #000;
-            color: #fff;
-            border: 1px solid #fff;
-            font-size: 0.8rem;
-            width: 100%;
-            margin-top: 10px;
-        }
+        .dq-btn:active { background: var(--dq-white); color: #000; }
+        .sound-select { background: #000; color: #fff; border: 1px solid #fff; font-size: 0.8rem; width: 100%; margin-top: 10px; padding: 5px; }
     </style>
 </head>
-
 <body>
     <div class="container">
-        <div class="clock-window" id="live-clock">00:00:00</div>
-        <div class="dq-window msg-window">
-            <div id="msg">パンしょくにんの あさが きた！▼</div>
-        </div>
+        <div class="clock-window"><span style="color:#aaa; font-size:0.8rem;">げんざいのじこく：</span><span id="live-clock">00:00:00</span></div>
+        
+        <div class="dq-window msg-window"><div id="msg">パンしょくにんの あさが きた！▼</div></div>
+        
         <div class="dq-window main-window">
             <ul class="command-list">
                 <li class="command-item" onclick="playSelect(); calcRemaining()">きぼうじかんまでは？</li>
@@ -198,6 +87,7 @@
                 </div>
             </div>
         </div>
+        
         <div class="dq-window">
             <div class="timer-display" id="t-display">00:00</div>
             <div class="btn-row">
@@ -228,7 +118,7 @@
             const type = document.getElementById('alarm-type').value;
             if (type === 'levelup') [523, 523, 523, 523, 659, 783, 523, 783].forEach((f, i) => setTimeout(() => playSound(f, 'square', 0.2), i * 150));
             else if (type === 'inn') [659, 587, 523, 587, 659, 659].forEach((f, i) => setTimeout(() => playSound(f, 'square', 0.3), i * 200));
-            else[783, 880, 987, 1046].forEach((f, i) => setTimeout(() => playSound(f, 'square', 0.1), i * 100));
+            else [783, 880, 987, 1046].forEach((f, i) => setTimeout(() => playSound(f, 'square', 0.1), i * 100));
         }
         function playAlarmTest() { playSelect(); setTimeout(playAlarm, 300); }
         function typeMessage(text) {
@@ -255,23 +145,34 @@
                 document.getElementById('alarm-type').value = saved.sound || "levelup";
             }
         }
+        
         function calcRemaining() {
             const target = document.getElementById('target-time').value;
             if (!target) return typeMessage("じかんを いれるのだ！");
             const now = new Date(); const [h, m] = target.split(':');
             let tDate = new Date(); tDate.setHours(h, m, 0);
             if (tDate < now) tDate.setDate(tDate.getDate() + 1);
-            timeLeft = Math.floor((tDate - now) / 1000);
-            updateTimerDisplay(); typeMessage("タイマーに セットしたぞ！");
+            
+            const diffSeconds = Math.floor((tDate - now) / 1000);
+            timeLeft = diffSeconds;
+            
+            const displayH = Math.floor(timeLeft / 3600);
+            const displayM = Math.floor((timeLeft % 3600) / 60);
+            
+            updateTimerDisplay(); 
+            // メッセージに計算結果（残り時間）を含める
+            typeMessage(`あと ${displayH}じかん ${displayM}ぷん だ！\nタイマーに セットしたぞ！`);
         }
+        
         function calcFinish() {
             const h = parseInt(document.getElementById('add-h').value) || 0;
             const m = parseInt(document.getElementById('add-m').value) || 0;
             if (h === 0 && m === 0) return typeMessage("じかんを いれるのだ！");
             timeLeft = (h * 3600) + (m * 60);
             updateTimerDisplay(); const finish = new Date(Date.now() + timeLeft * 1000);
-            typeMessage(`${finish.getHours()}じ ${String(finish.getMinutes()).padStart(2, '0')}ふん に やきあがるぞ！`);
+            typeMessage(`${finish.getHours()}じ ${String(finish.getMinutes()).padStart(2, '0')}ふん に やきあがるぞ！\nタイマーに セットしたぞ！`);
         }
+        
         function startTimer() {
             if (timeLeft <= 0) return typeMessage("じかんが ないぞ！");
             endTime = Date.now() + timeLeft * 1000;
@@ -295,5 +196,4 @@
         document.addEventListener('visibilitychange', () => { if (!document.hidden && timerInterval) tick(); });
     </script>
 </body>
-
 </html>
