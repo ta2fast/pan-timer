@@ -25,8 +25,10 @@
             user-select: none;
         }
         .container { width: 95%; max-width: 440px; padding: 10px; display: flex; flex-direction: column; gap: 12px; }
+        
+        /* 現時刻のフォントサイズを大きく調整 */
         .clock-window { 
-            width: 100%; box-sizing: border-box; padding: 10px; font-size: 1.1rem; 
+            width: 100%; box-sizing: border-box; padding: 12px; font-size: 1.2rem; 
             border: var(--dq-border); border-radius: 10px; box-shadow: 0 0 0 2px #000; 
             margin-top: 5px; text-align: left;
         }
@@ -58,7 +60,7 @@
 </head>
 <body>
     <div class="container">
-        <div class="clock-window"><span style="color:#aaa; font-size:0.8rem;">げんざいのじこく：</span><span id="live-clock">00:00:00</span></div>
+        <div class="clock-window">げんざい：<span id="live-clock">00:00:00</span></div>
         <div class="dq-window msg-window"><div id="msg">▼</div></div>
         <div class="dq-window main-window">
             <ul class="command-list">
@@ -98,6 +100,7 @@
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
         function playSound(freq, type, duration, vol = 0.1) {
+            if (audioCtx.state !== 'running') return; // オーディオが有効でない時は鳴らさない
             const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
             osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
             gain.gain.setValueAtTime(vol, audioCtx.currentTime);
@@ -116,7 +119,10 @@
             else [783, 880, 987, 1046].forEach((f, i) => setTimeout(() => playSound(f, 'square', 0.1), i * 100));
         }
 
-        function playAlarmTest() { playSelect(); setTimeout(playAlarm, 300); }
+        function playAlarmTest() { 
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            playSelect(); setTimeout(playAlarm, 300); 
+        }
 
         function typeMessage(text) {
             clearInterval(typeInterval);
@@ -190,6 +196,7 @@
 
         function startTimer() {
             if (timeLeft <= 0) return typeMessage("じかんが ないぞ！");
+            if (audioCtx.state === 'suspended') audioCtx.resume();
             endTime = Date.now() + timeLeft * 1000;
             clearInterval(timerInterval);
             typeMessage("パンを やきはじめた！");
@@ -218,19 +225,16 @@
             updateClock(); 
             load(); 
             updateTimerDisplay(); 
-            setTimeout(() => {
-                if (audioCtx.state === 'running') typeMessage(getGreeting());
-                else document.getElementById('msg').textContent = "（画面をタップしてはじめよう）";
-            }, 500);
+            // 起動時に自動でメッセージを開始
+            typeMessage(getGreeting());
         };
 
+        // どこかをタップした時に音の制限を解除する
         document.body.addEventListener('click', () => { 
             if (audioCtx.state === 'suspended') {
-                audioCtx.resume().then(() => {
-                    typeMessage(getGreeting());
-                });
+                audioCtx.resume();
             }
-        }, { once: true });
+        }, { once: false });
 
         document.addEventListener('visibilitychange', () => { if (!document.hidden && timerInterval) tick(); });
     </script>
