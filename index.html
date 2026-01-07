@@ -1,132 +1,17 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="apple-touch-icon" href="icon-image.png?v=1">
-    <link rel="icon" type="image/png" href="icon-image.png?v=1">
-    <meta name="apple-mobile-web-app-title" content="PAN TIMER">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>PAN TIMER</title>
-    <style>
-        :root {
-            --dq-white: #ffffff;
-            --dq-border: 3px solid var(--dq-white);
-        }
-        body {
-            background-color: #000;
-            color: var(--dq-white);
-            font-family: 'Courier New', 'DotGothic16', sans-serif;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            touch-action: manipulation;
-            user-select: none;
-        }
-        .container { width: 95%; max-width: 440px; padding: 10px; display: flex; flex-direction: column; gap: 12px; }
-        
-        /* 現時刻のフォントサイズを大きく調整 */
-        .clock-window { 
-            width: 100%; box-sizing: border-box; padding: 12px; font-size: 1.2rem; 
-            border: var(--dq-border); border-radius: 10px; box-shadow: 0 0 0 2px #000; 
-            margin-top: 5px; text-align: left;
-        }
-        .dq-window { background: #000; border: var(--dq-border); border-radius: 10px; padding: 15px; box-shadow: 0 0 0 2px #000; }
-        .msg-window { min-height: 70px; font-size: 1.2rem; line-height: 1.5; }
-        .main-window { display: grid; grid-template-columns: 1.3fr 1fr; gap: 10px; }
-        .command-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; justify-content: center; gap: 15px; }
-        .command-item { cursor: pointer; padding: 8px 5px; font-size: 1rem; display: flex; align-items: center; position: relative; }
-        .command-item::before { content: '▶'; color: transparent; margin-right: 8px; }
-        .command-item:hover::before, .command-item:active::before { color: var(--dq-white); }
-        .input-area { display: flex; flex-direction: column; gap: 15px; border-left: 1px solid #444; padding-left: 15px; }
-        .input-group { display: flex; flex-direction: column; gap: 5px; }
-        .input-group label { font-size: 0.75rem; color: #aaa; text-align: center; }
-        input {
-            background: transparent; border: none; border-bottom: 2px solid var(--dq-white);
-            color: var(--dq-white); font-size: 1.3rem; width: 100%; outline: none; text-align: center;
-        }
-        .time-split { display: flex; align-items: center; justify-content: center; gap: 4px; }
-        .time-split input { width: 45px; }
-        .timer-display { font-size: 4rem; margin: 10px 0; font-family: monospace; text-align: center; }
-        .btn-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-        .dq-btn {
-            background: transparent; border: 2px solid var(--dq-white);
-            color: var(--dq-white); padding: 12px 5px; cursor: pointer; font-size: 1rem;
-        }
-        .dq-btn:active { background: var(--dq-white); color: #000; }
-        .sound-select { background: #000; color: #fff; border: 1px solid #fff; font-size: 0.8rem; width: 100%; margin-top: 10px; padding: 5px; }
-    </style>
-</head>
 <body>
     <div class="container">
         <div class="clock-window">げんざい：<span id="live-clock">00:00:00</span></div>
-        <div class="dq-window msg-window"><div id="msg">▼</div></div>
-        <div class="dq-window main-window">
-            <ul class="command-list">
-                <li class="command-item" onclick="playSelect(); calcRemaining()">きぼうじかんまでは？</li>
-                <li class="command-item" onclick="playSelect(); calcFinish()">げんじこくにたすと？</li>
-            </ul>
-            <div class="input-area">
-                <div class="input-group">
-                    <label>焼き上がり時間</label>
-                    <input type="time" id="target-time" onchange="save()">
-                </div>
-                <div class="input-group">
-                    <label>足す時間</label>
-                    <div class="time-split">
-                        <input type="number" id="add-h" placeholder="0" onchange="save()">h
-                        <input type="number" id="add-m" placeholder="0" onchange="save()">m
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="dq-window">
-            <div class="timer-display" id="t-display">00:00</div>
-            <div class="btn-row">
-                <button class="dq-btn" onclick="playSelect(); startTimer()">はじめる</button>
-                <button class="dq-btn" onclick="playSelect(); pauseTimer()">とまる</button>
-                <button class="dq-btn" onclick="playSelect(); resetTimer()">リセット</button>
-            </div>
-            <select id="alarm-type" class="sound-select" onchange="playAlarmTest()">
-                <option value="levelup">じゅもん：レベルアップ</option>
-                <option value="inn">じゅもん：しゅくやど</option>
-                <option value="save">じゅもん：ぼうけんのきろく</option>
-            </select>
-        </div>
-    </div>
-    <script>
-        let typeInterval, timerInterval, timeLeft = 0, endTime = 0;
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-        function playSound(freq, type, duration, vol = 0.1) {
-            if (audioCtx.state !== 'running') return; // オーディオが有効でない時は鳴らさない
-            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
-            osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + duration);
-        }
-
-        function playSelect() { playSound(880, 'square', 0.1); }
-        function playTextSE() { playSound(1050, 'square', 0.03, 0.05); }
-
-        function playAlarm() {
-            const type = document.getElementById('alarm-type').value;
-            if (type === 'levelup') [523, 523, 523, 523, 659, 783, 523, 783].forEach((f, i) => setTimeout(() => playSound(f, 'square', 0.2), i * 150));
-            else if (type === 'inn') [659, 587, 523, 587, 659, 659].forEach((f, i) => setTimeout(() => playSound(f, 'square', 0.3), i * 200));
-            else [783, 880, 987, 1046].forEach((f, i) => setTimeout(() => playSound(f, 'square', 0.1), i * 100));
-        }
-
-        function playAlarmTest() { 
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            playSelect(); setTimeout(playAlarm, 300); 
-        }
+        
+        <div class="dq-window msg-window"><div id="msg"></div></div>
+        
+        <script>
+        // ...（中略：既存の変数・playSound・playAlarmなどは変更なし）...
 
         function typeMessage(text) {
             clearInterval(typeInterval);
-            const msgEl = document.getElementById('msg'); msgEl.textContent = ""; let i = 0;
+            const msgEl = document.getElementById('msg');
+            msgEl.textContent = ""; // 枠を一旦空にする
+            let i = 0;
             typeInterval = setInterval(() => { 
                 if (i < text.length) { 
                     const char = text.charAt(i);
@@ -135,108 +20,25 @@
                     i++; 
                 } else {
                     clearInterval(typeInterval);
-                    msgEl.textContent += "▼";
+                    // 最後に「▼」を表示して停止
+                    msgEl.innerHTML += "<span style='margin-left:5px;'>▼</span>";
                 }
             }, 60);
         }
 
-        function getGreeting() {
-            const hour = new Date().getHours();
-            if (hour >= 4 && hour < 8) return "パンしょくにんの あさは はやい！ おはよう！";
-            if (hour >= 8 && hour < 12) return "パンの やける いいかおりが してきたぞ。";
-            if (hour >= 12 && hour < 17) return "おひるどきだ。 パンづくりに せをだそう。";
-            if (hour >= 17 && hour < 22) return "こんやの しこみを はじめるとするか。";
-            return "こんな よふかしして パンを やくのか？";
-        }
-
-        function updateClock() { document.getElementById('live-clock').textContent = new Date().toLocaleTimeString('ja-JP', { hour12: false }); }
-        setInterval(updateClock, 1000);
-
-        function save() {
-            localStorage.setItem('dqPanV7', JSON.stringify({
-                time: document.getElementById('target-time').value,
-                addH: document.getElementById('add-h').value,
-                addM: document.getElementById('add-m').value,
-                sound: document.getElementById('alarm-type').value
-            }));
-        }
-
-        function load() {
-            const saved = JSON.parse(localStorage.getItem('dqPanV7'));
-            if (saved) {
-                document.getElementById('target-time').value = saved.time || "";
-                document.getElementById('add-h').value = saved.addH || "";
-                document.getElementById('add-m').value = saved.addM || "";
-                document.getElementById('alarm-type').value = saved.sound || "levelup";
-            }
-        }
-
-        function calcRemaining() {
-            const target = document.getElementById('target-time').value;
-            if (!target) return typeMessage("じかんを いれるのだ！");
-            const now = new Date(); const [h, m] = target.split(':');
-            let tDate = new Date(); tDate.setHours(h, m, 0);
-            if (tDate < now) tDate.setDate(tDate.getDate() + 1);
-            const diffSeconds = Math.floor((tDate - now) / 1000);
-            timeLeft = diffSeconds;
-            const displayH = Math.floor(timeLeft / 3600);
-            const displayM = Math.floor((timeLeft % 3600) / 60);
-            updateTimerDisplay(); 
-            typeMessage(`あと ${displayH}じかん ${displayM}ぷん だ！\nタイマーに セットしたぞ！`);
-        }
-
-        function calcFinish() {
-            const h = parseInt(document.getElementById('add-h').value) || 0;
-            const m = parseInt(document.getElementById('add-m').value) || 0;
-            if (h === 0 && m === 0) return typeMessage("じかんを いれるのだ！");
-            timeLeft = (h * 3600) + (m * 60);
-            updateTimerDisplay(); const finish = new Date(Date.now() + timeLeft * 1000);
-            typeMessage(`${finish.getHours()}じ ${String(finish.getMinutes()).padStart(2, '0')}ふん に やきあがるぞ！\nタイマーに セットしたぞ！`);
-        }
-
-        function startTimer() {
-            if (timeLeft <= 0) return typeMessage("じかんが ないぞ！");
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            endTime = Date.now() + timeLeft * 1000;
-            clearInterval(timerInterval);
-            typeMessage("パンを やきはじめた！");
-            timerInterval = setInterval(tick, 1000);
-        }
-
-        function tick() {
-            timeLeft = Math.max(0, Math.round((endTime - Date.now()) / 1000));
-            updateTimerDisplay();
-            if (timeLeft <= 0) { 
-                clearInterval(timerInterval); 
-                playAlarm(); 
-                typeMessage("パンが やけたぞ！\nおめでとう！ レベルがあがった！"); 
-            }
-        }
-
-        function pauseTimer() { clearInterval(timerInterval); typeMessage("ちょっと ひとやすみだ。"); }
-        function resetTimer() { pauseTimer(); timeLeft = 0; updateTimerDisplay(); typeMessage("タイマーを リセットした。"); }
-        
-        function updateTimerDisplay() {
-            const h = Math.floor(timeLeft / 3600), m = Math.floor((timeLeft % 3600) / 60), s = timeLeft % 60;
-            document.getElementById('t-display').textContent = h > 0 ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}` : `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-        }
+        // ...（中略：load・save・calcなどは変更なし）...
 
         window.onload = () => { 
             updateClock(); 
             load(); 
             updateTimerDisplay(); 
-            // 起動時に自動でメッセージを開始
-            typeMessage(getGreeting());
+            
+            // ページ読み込み完了のわずか後にメッセージを開始（確実性を高めるため）
+            setTimeout(() => {
+                typeMessage(getGreeting());
+            }, 100);
         };
 
-        // どこかをタップした時に音の制限を解除する
-        document.body.addEventListener('click', () => { 
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-        }, { once: false });
-
-        document.addEventListener('visibilitychange', () => { if (!document.hidden && timerInterval) tick(); });
+        // ...（以下略）...
     </script>
 </body>
-</html>
