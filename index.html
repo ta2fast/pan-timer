@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>パンどろぼう風・保存機能付き計算機</title>
+    <style>
+        :root {
+            --bread-color: #f4d06f;
+            --crust-color: #b36200;
+            --bg-color: #fff9ed;
+            --text-color: #5d4037;
+            --accent-red: #d32f2f;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            color: var(--text-color);
+        }
+
+        .container {
+            text-align: center;
+            width: 95%;
+            max-width: 450px;
+            padding: 15px;
+        }
+
+        .now-clock-container {
+            margin-bottom: 5px;
+        }
+
+        .now-label {
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: var(--crust-color);
+            margin-bottom: 2px;
+        }
+
+        .now-time {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: var(--text-color);
+            letter-spacing: 2px;
+        }
+
+        .mode-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .tab-btn {
+            background: #e0d5c1;
+            border: none;
+            padding: 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #777;
+            flex: 1;
+            font-size: 0.9rem;
+        }
+
+        .tab-btn.active {
+            background: var(--crust-color);
+            color: white;
+        }
+
+        .bread-shape {
+            background: white;
+            border: 4px solid var(--crust-color);
+            border-radius: 35% 35% 15% 15% / 45% 45% 15% 15%;
+            box-shadow: 0 5px 0 #d7a644;
+            display: inline-flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .main-bread {
+            width: 280px;
+            height: 160px;
+            margin-bottom: 15px;
+        }
+
+        .result-label {
+            font-size: 0.8rem;
+            color: var(--accent-red);
+            font-weight: bold;
+            margin-top: -10px;
+            z-index: 2;
+        }
+
+        .result-time {
+            font-size: 3.2rem;
+            font-weight: bold;
+            z-index: 2;
+        }
+
+        .target-box {
+            background: white;
+            padding: 8px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            border: 2px dashed var(--crust-color);
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .menu-bread-btn {
+            width: 100%;
+            height: 130px;
+            cursor: pointer;
+            padding: 5px;
+            box-sizing: border-box;
+            transition: transform 0.1s;
+        }
+
+        .menu-bread-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #d7a644;
+        }
+
+        .menu-title-input {
+            border: none;
+            border-bottom: 1px solid #ccc;
+            width: 85%;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: var(--text-color);
+            background: transparent;
+            margin-top: 15px;
+        }
+
+        .time-input-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .menu-time-num {
+            border: none;
+            width: 35px;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+            background: #fff9ed;
+            border-radius: 5px;
+        }
+
+        .face::before,
+        .face::after {
+            content: '';
+            position: absolute;
+            background: #333;
+            border-radius: 50%;
+            width: 6px;
+            height: 6px;
+            top: 30%;
+        }
+
+        .face::before {
+            left: 30%;
+        }
+
+        .face::after {
+            right: 30%;
+        }
+
+        .nose {
+            position: absolute;
+            width: 8px;
+            height: 6px;
+            background: #ff5252;
+            border-radius: 50%;
+            top: 45%;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="now-clock-container">
+            <div class="now-label">現在の時刻</div>
+            <div class="now-time" id="live-clock">00:00:00</div>
+        </div>
+
+        <div class="mode-tabs">
+            <button class="tab-btn active" id="tab1" onclick="switchMode(1)">いつ終わる？</button>
+            <button class="tab-btn" id="tab2" onclick="switchMode(2)">いつ始める？</button>
+        </div>
+
+        <div class="bread-shape main-bread">
+            <div class="face"></div>
+            <div class="nose"></div>
+            <div id="res-label" class="result-label">メニューをタップ</div>
+            <div id="res-display" class="result-time">--:--</div>
+        </div>
+
+        <div id="target-ui" class="target-box hidden">
+            希望の終了時刻：<input type="time" id="target-t" onchange="saveAllData()" style="font-size: 1.1rem; border:none; border-bottom:2px solid var(--crust-color); background:transparent;">
+        </div>
+
+        <div class="menu-grid" id="menu-container">
+        </div>
+    </div>
+
+    <script>
+        let currentMode = 1;
+        const defaultMenus = [
+            { title: "一次発酵", h: 1, m: 0 },
+            { title: "二次発酵", h: 0, m: 45 },
+            { title: "焼き上げ", h: 0, m: 15 },
+            { title: "予熱", h: 0, m: 10 }
+        ];
+
+        function updateClock() {
+            document.getElementById('live-clock').textContent = new Date().toLocaleTimeString('ja-JP');
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function switchMode(mode) {
+            currentMode = mode;
+            document.getElementById('tab1').classList.toggle('active', mode === 1);
+            document.getElementById('tab2').classList.toggle('active', mode === 2);
+            document.getElementById('target-ui').classList.toggle('hidden', mode === 1);
+            saveAllData();
+        }
+
+        // メニューボタンの生成と初期化
+        function initMenus() {
+            const savedData = localStorage.getItem('panTimerData');
+            const menus = savedData ? JSON.parse(savedData).menus : defaultMenus;
+            const savedMode = savedData ? JSON.parse(savedData).mode : 1;
+
+            const container = document.getElementById('menu-container');
+            container.innerHTML = '';
+
+            menus.forEach((menu, index) => {
+                const btn = document.createElement('div');
+                btn.className = 'bread-shape menu-bread-btn';
+                btn.onclick = function () { useMenu(this); };
+                btn.innerHTML = `
+                <input type="text" class="menu-title-input" value="${menu.title}" oninput="saveAllData()" onclick="event.stopPropagation()">
+                <div class="time-input-group" onclick="event.stopPropagation()">
+                    <input type="number" class="menu-time-num h-val" value="${menu.h}" oninput="saveAllData()">時
+                    <input type="number" class="menu-time-num m-val" value="${menu.m}" oninput="saveAllData()">分
+                </div>
+            `;
+                container.appendChild(btn);
+            });
+
+            if (savedMode) switchMode(savedMode);
+        }
+
+        // データの保存
+        function saveAllData() {
+            const menuElements = document.querySelectorAll('.menu-bread-btn');
+            const menus = Array.from(menuElements).map(el => ({
+                title: el.querySelector('.menu-title-input').value,
+                h: el.querySelector('.h-val').value,
+                m: el.querySelector('.m-val').value
+            }));
+
+            const data = {
+                menus: menus,
+                mode: currentMode
+            };
+            localStorage.setItem('panTimerData', JSON.stringify(data));
+        }
+
+        function useMenu(element) {
+            const title = element.querySelector('.menu-title-input').value;
+            const h = parseInt(element.querySelector('.h-val').value) || 0;
+            const m = parseInt(element.querySelector('.m-val').value) || 0;
+            const durationMs = (h * 60 + m) * 60 * 1000;
+            const now = new Date();
+
+            if (currentMode === 1) {
+                const finishDate = new Date(now.getTime() + durationMs);
+                document.getElementById('res-label').textContent = title + " の終了時刻";
+                document.getElementById('res-display').textContent = `${finishDate.getHours()}:${String(finishDate.getMinutes()).padStart(2, '0')}`;
+            } else {
+                const targetStr = document.getElementById('target-t').value;
+                if (!targetStr) { alert("先に「希望の終了時刻」を入れてね！"); return; }
+                const [tH, tM] = targetStr.split(':');
+                const targetDate = new Date();
+                targetDate.setHours(tH, tM, 0);
+                if (targetDate < now) targetDate.setDate(targetDate.getDate() + 1);
+                const startDate = new Date(targetDate.getTime() - durationMs);
+                document.getElementById('res-label').textContent = title + " の開始時刻";
+                document.getElementById('res-display').textContent = `${startDate.getHours()}:${String(startDate.getMinutes()).padStart(2, '0')}`;
+            }
+        }
+
+        window.onload = initMenus;
+    </script>
+</body>
+
+</html>
